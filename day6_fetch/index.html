@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <form class="search-form">
+    <input type="text" class="search" placeholder="City or State">
+    <ul class="suggestions">
+      <li>Filter for a city</li>
+      <li>or a state</li>
+    </ul>
+  </form>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+<script>
+
+const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+const cities=[];
+fetch(endpoint)
+  .then(function(blob){
+    return blob.json();
+  })
+  .then(function(data){
+    cities.push(...data)
+  });
+
+
+  function filterCities(wordToMatch,cities){
+    return cities.filter(function(data){
+      var regex=new RegExp(wordToMatch,"gi");
+      return data.city.match(regex)||data.state.match(regex);
+    })
+  }
+
+
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function displayMatches(){
+    const matches=filterCities(this.value,cities);
+    $(".suggestions").empty()
+    var inputVal= this.value;
+    if(matches.length===0||this.value===""){
+      $(".suggestions").append(`<li>Filter for a city</li>
+      <li>or a state</li>`);
+    }else{
+      const html =matches.map(function(data){
+        var regex=new RegExp(inputVal,"gi");
+        var cityName=data.city.replace(regex,`<span class="hl">${inputVal}</span>`);
+        var stateName=data.state.replace(regex,`<span class="hl">${inputVal}</span>`);
+
+        return `<li>
+        <span class="name">${cityName},${stateName}</span>
+        <span class="population">${numberWithCommas(data.population)}</span>
+        </li>`
+      }).join('')
+      $(".suggestions").append(html);
+    }
+  }
+
+  $(".search").on("change",displayMatches)
+  $(".search").on("keyup",displayMatches)
+  // function filterCities(wordToMatch,cities){
+  //   return cities.filter(function(data){
+  //     return data.city.includes(wordToMatch)||data.state.includes(wordToMatch);
+  //   })
+  // }
+
+
+// $(".search").on("input",function(e){
+//   const result= filterCities(this.value,cities)
+//   console.log(result)
+// })
+
+</script>
+  </body>
+</html>
